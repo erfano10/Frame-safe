@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+
+
+enum Role {
+  PHOTOGRAPHER
+  CLIENT
+}
+
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role
+  createdAt DateTime @default(now())
+
+  albums Album[]
+}
+
+
+model Album {
+  id             String @id @default(uuid())
+  title          String
+  clientName     String
+  photographerId String
+
+  photographer User @relation(fields: [photographerId], references: [id])
+
+  photos Photo[]
+  payments Payment[]
+
+  createdAt DateTime @default(now())
+}
+
+
+
+model Photo {
+  id String @id @default(uuid())
+
+  albumId String
+
+  previewUrl String
+  highResUrl String?
+
+  isPaid Boolean @default(false)
+
+  album Album @relation(fields: [albumId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+
+model Payment {
+  id String @id @default(uuid())
+
+  albumId String
+
+  amount Int
+
+  status PaymentStatus @default(PENDING)
+
+  album Album @relation(fields: [albumId], references: [id])
+
+  createdAt DateTime @default(now())
+}
