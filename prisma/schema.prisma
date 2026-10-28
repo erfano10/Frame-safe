@@ -8,13 +8,10 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-
-
 enum Role {
   PHOTOGRAPHER
   CLIENT
 }
-
 
 enum PaymentStatus {
   PENDING
@@ -22,18 +19,45 @@ enum PaymentStatus {
   FAILED
 }
 
-
-model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role
-  createdAt DateTime @default(now())
-
-  albums Album[]
+enum AlbumStatus {
+  DRAFT
+  PUBLISHED
+  COMPLETED
 }
 
+model PhotographerProfile {
+  id          String   @id @default(uuid())
+
+  userId      String   @unique
+
+  brandName   String?
+  bio          String?
+  instagram   String?
+  whatsapp    String?
+
+  qrisUrl     String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
+  role     Role
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  albums Album[]
+
+  profile PhotographerProfile?
+}
 
 model Album {
   id             String @id @default(uuid())
@@ -43,29 +67,30 @@ model Album {
 
   photographer User @relation(fields: [photographerId], references: [id])
 
-  photos Photo[]
+  photos   Photo[]
   payments Payment[]
 
   createdAt DateTime @default(now())
+
+  status AlbumStatus @default(DRAFT)
+
+  //publicToken String @unique 
 }
-
-
 
 model Photo {
   id String @id @default(uuid())
 
   albumId String
 
-  previewUrl String
-  highResUrl String?
+  previewUrl   String
+  highResUrl   String?
 
   isPaid Boolean @default(false)
 
-  album Album @relation(fields: [albumId], references: [id])
+  album Album @relation(fields: [albumId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }
-
 
 model Payment {
   id String @id @default(uuid())
@@ -73,6 +98,8 @@ model Payment {
   albumId String
 
   amount Int
+
+  proofUrl String?
 
   status PaymentStatus @default(PENDING)
 

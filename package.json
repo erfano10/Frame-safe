@@ -4,23 +4,32 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/server.ts",
+    "dev": "nodemon --exec ts-node --files src/server.ts",
     "postinstall": "prisma skills sync || exit 0"
   },
   "keywords": [],
   "type": "commonjs",
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^18.0.9",
     "express": "^5.3.0",
+    "jsonwebtoken": "^9.0.3",
     "prisma": "^6.19.3"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.6.5",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
+  },
+  "allowScripts": {
+    "bcrypt@6.0.0": true,
+    "prisma@6.19.3": true,
+    "@prisma/client@6.19.3": true
   }
 }
