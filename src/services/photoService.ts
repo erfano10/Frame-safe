@@ -6,6 +6,11 @@ interface CreatePhotoData {
   highResUrl?: string;
 }
 
+interface UpdatePhotoData {
+  previewUrl?: string;
+  highResUrl?: string;
+}
+
 export const createPhoto = async (
   data: CreatePhotoData,
   photographerId: string
@@ -81,4 +86,75 @@ export const getPhotosByAlbum = async (
 
 
   return photos;
+};
+
+ export const UpdatePhoto = async (
+  photoID: string,
+  data: UpdatePhotoData,
+  photographerId:string
+ )=> {
+    const photo = await prisma.photo.findUnique({
+    where: {
+      id: photoID,
+    },
+    include: {
+      album: true,
+    },
+  });
+
+  if (!photo) {
+    throw new Error("Photo not found");
+  }
+
+  if (photo.album.photographerId !== photographerId) {
+    throw new Error(
+      "You are not allowed to update this photo"
+    );
+  }
+
+  const updatedPhoto = await prisma.photo.update({
+    where: {
+      id: photoID,
+    },
+    data,
+  });
+
+  return updatedPhoto;
+ }
+
+ export const deletePhoto = async (
+  photoId: string,
+  photographerId: string
+) => {
+
+  const photo = await prisma.photo.findUnique({
+    where: {
+      id: photoId,
+    },
+    include: {
+      album: true,
+    },
+  });
+
+
+  if (!photo) {
+    throw new Error("Photo not found");
+  }
+
+
+  if (photo.album.photographerId !== photographerId) {
+    throw new Error(
+      "You are not allowed to delete this photo"
+    );
+  }
+
+
+  const deletedPhoto = await prisma.photo.delete({
+    where: {
+      id: photoId,
+    },
+  });
+
+
+  return deletedPhoto;
 };

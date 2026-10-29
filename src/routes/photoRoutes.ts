@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authMiddleware } from "../middlewares/authMiddleware";
 import { requireRole } from "../middlewares/roleMiddleware";
-import { createPhotoController, getPhotosByAlbumController } from "../controllers/photoController";
+import { createPhotoController, deletePhotoController, getPhotosByAlbumController, updatePhotoController } from "../controllers/photoController";
 
 
 const router = Router();
@@ -21,6 +21,17 @@ router.get(
   getPhotosByAlbumController
 );
 
+router.put(
+  "/:id",
+authMiddleware,
+requireRole("PHOTOGRAPHER"),
+updatePhotoController
+)
 
-
+router.delete(
+  "/:id",
+  authMiddleware,
+  requireRole("PHOTOGRAPHER"),
+  deletePhotoController
+)
 export default router;
