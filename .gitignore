@@ -13,3 +13,5 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+
+prisma/schema_backup_before_v1.prisma
