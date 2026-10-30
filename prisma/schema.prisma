@@ -7,268 +7,135 @@ datasource db {
   url      = env("DIRECT_URL")
 }
 
-// =========================
-// USER & AUTH
-// =========================
-
 model User {
-  id String @id @default(uuid())
-
-  email String @unique
-
-  name String?
-
-  password String
-
-  role Role @default(CLIENT)
-
+  id                  String               @id @default(uuid())
+  name                String?
+  email               String               @unique
+  password            String
+  role                Role                 @default(CLIENT)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  albums              Album[]
+  clientProfile       ClientProfile?
   photographerProfile PhotographerProfile?
-
-  clientProfile ClientProfile?
-
-  albums Album[]
-
-  purchases Purchase[]
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
+  purchases           Purchase[]
 }
 
-// =========================
-// ROLE
-// =========================
+model PhotographerProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  brandName String
+  bio       String?
+  instagram String?
+  whatsapp  String?
+  qrisUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ClientProfile {
+  id     String  @id @default(uuid())
+  userId String  @unique
+  name   String
+  phone  String?
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Album {
+  id             String        @id @default(uuid())
+  title          String
+  clientName     String?
+  photographerId String
+  createdAt      DateTime      @default(now())
+  status         AlbumStatus   @default(DRAFT)
+  description    String?
+  photographer   User          @relation(fields: [photographerId], references: [id])
+  accesses       AlbumAccess[]
+  photos         Photo[]
+  purchases      Purchase[]
+}
+
+model Photo {
+  id               String                @id @default(uuid())
+  albumId          String
+  previewUrl       String
+  highResUrl       String?
+  isPaid           Boolean               @default(false)
+  createdAt        DateTime              @default(now())
+  originalUrl      String?
+  processingStatus PhotoProcessingStatus @default(UPLOADED)
+  album            Album                 @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  purchases        Purchase[]
+}
+
+model AlbumAccess {
+  id        String    @id @default(uuid())
+  albumId   String
+  token     String    @unique
+  isActive  Boolean   @default(true)
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  album     Album     @relation(fields: [albumId], references: [id], onDelete: Cascade)
+}
+
+model Purchase {
+  id        String         @id @default(uuid())
+  buyerId   String
+  albumId   String?
+  photoId   String?
+  type      PurchaseType
+  status    PurchaseStatus @default(PENDING)
+  createdAt DateTime       @default(now())
+  payment   Payment?
+  album     Album?         @relation(fields: [albumId], references: [id])
+  buyer     User           @relation(fields: [buyerId], references: [id])
+  photo     Photo?         @relation(fields: [photoId], references: [id])
+}
+
+model Payment {
+  id         String        @id @default(uuid())
+  status     PaymentStatus @default(PENDING)
+  createdAt  DateTime      @default(now())
+  proofUrl   String?
+  purchaseId String        @unique
+  purchase   Purchase      @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+}
 
 enum Role {
   PHOTOGRAPHER
-
   CLIENT
 }
 
-// =========================
-// PHOTOGRAPHER PROFILE
-// =========================
-
-model PhotographerProfile {
-  id String @id @default(uuid())
-
-  userId String @unique
-
-  brandName String?
-
-  bio String?
-
-  instagram String?
-
-  whatsapp String?
-
-  qrisUrl String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-}
-
-// =========================
-// CLIENT PROFILE
-// =========================
-
-model ClientProfile {
-  id String @id @default(uuid())
-
-  userId String @unique
-
-  name String
-
-  phone String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-// =========================
-// ALBUM
-// =========================
-
-model Album {
-  id String @id @default(uuid())
-
-  title String
-
-  clientName String?
-
-  description String?
-
-  photographerId String
-
-  status AlbumStatus @default(DRAFT)
-
-  photographer User @relation(fields: [photographerId], references: [id])
-
-  photos Photo[]
-
-  accesses AlbumAccess[]
-
-  purchases Purchase[]
-
-  createdAt DateTime @default(now())
-}
-
-// =========================
-// ALBUM STATUS
-// =========================
-
 enum AlbumStatus {
   DRAFT
-
   PUBLISHED
-
   COMPLETED
 }
 
-// =========================
-// PHOTO
-// =========================
-
-model Photo {
-  id String @id @default(uuid())
-
-  albumId String
-
-  originalUrl String?
-
-  previewUrl String
-
-  highResUrl String?
-
-  isPaid Boolean @default(false)
-
-  processingStatus PhotoProcessingStatus @default(UPLOADED)
-
-  album Album @relation(fields: [albumId], references: [id], onDelete: Cascade)
-
-  purchases Purchase[]
-
-  createdAt DateTime @default(now())
-}
-
-// =========================
-// PHOTO PROCESSING
-// =========================
-
 enum PhotoProcessingStatus {
   UPLOADED
-
   PROCESSING
-
   READY
-
   FAILED
 }
-
-// =========================
-// ALBUM PUBLIC ACCESS
-// =========================
-
-model AlbumAccess {
-  id String @id @default(uuid())
-
-  albumId String
-
-  token String @unique
-
-  isActive Boolean @default(true)
-
-  expiresAt DateTime?
-
-  album Album @relation(fields: [albumId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-}
-
-// =========================
-// PURCHASE
-// =========================
-
-model Purchase {
-  id String @id @default(uuid())
-
-  buyerId String
-
-  albumId String?
-
-  photoId String?
-
-  type PurchaseType
-
-  status PurchaseStatus @default(PENDING)
-
-  buyer User @relation(fields: [buyerId], references: [id])
-
-  album Album? @relation(fields: [albumId], references: [id])
-
-  photo Photo? @relation(fields: [photoId], references: [id])
-
-  payment Payment?
-
-  createdAt DateTime @default(now())
-}
-
-// =========================
-// PURCHASE TYPE
-// =========================
 
 enum PurchaseType {
   ALBUM
-
   PHOTO
 }
 
-// =========================
-// PAYMENT
-// =========================
-
-model Payment {
-  id String @id @default(uuid())
-
-  purchaseId String? @unique
-
-  albumId String?
-
-  amount Int?
-
-  proofUrl String?
-
-  status PaymentStatus @default(PENDING)
-
-  purchase Purchase? @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-}
-
-// =========================
-// PAYMENT STATUS
-// =========================
-
 enum PaymentStatus {
   PENDING
-
-  PROOF_UPLOADED
-
   PAID
-
-  REJECTED
-
-  EXPIRED
-
   FAILED
+  PROOF_UPLOADED
+  REJECTED
+  EXPIRED
 }
 
 enum PurchaseStatus {
   PENDING
-
   COMPLETED
-
   CANCELLED
 }
