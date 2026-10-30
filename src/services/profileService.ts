@@ -1,7 +1,7 @@
 import { prisma } from "../config/prisma";
 
 interface UpdateProfileData {
-  brandName?: string;
+  brandName: string;
   bio?: string;
   instagram?: string;
   whatsapp?: string;
@@ -27,11 +27,19 @@ export const updateProfile = async (
       },
     });
 
+
+  if (!data.brandName) {
+    throw new Error("Brand name is required");
+  }
   if (!existingProfile) {
     return await prisma.photographerProfile.create({
       data: {
         userId,
-        ...data,
+        brandName: data.brandName ?? "Unnamed Studio",
+        bio: data.bio,
+        instagram: data.instagram,
+        whatsapp: data.whatsapp,
+        qrisUrl: data.qrisUrl
       },
     });
   }
