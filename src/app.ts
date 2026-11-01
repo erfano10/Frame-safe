@@ -4,10 +4,12 @@ import authRoutes from "./routes/authRoutes"
 import albumRoutes from "./routes/albumRoutes"
 import profileRoutes from "./routes/profileRoutes"
 import photoRoutes from "./routes/photoRoutes"
+import purchaseRoutes from "./routes/purchaseRoutes";
+import paymentRoutes from "./routes/paymentRoutes";
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json()); 
 
 
 app.get("/", (req, res) => {
@@ -24,5 +26,9 @@ app.use("/api/albums",albumRoutes)
 app.use("/api/profile", profileRoutes)
 
 app.use("/api/photos",photoRoutes)
+
+app.use("/api/purchases", purchaseRoutes)
+
+app.use("/api/payments", paymentRoutes);
 
 export default app;

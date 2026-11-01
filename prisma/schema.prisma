@@ -87,6 +87,7 @@ model Purchase {
   type      PurchaseType
   status    PurchaseStatus @default(PENDING)
   createdAt DateTime       @default(now())
+  expiredAt DateTime
   payment   Payment?
   album     Album?         @relation(fields: [albumId], references: [id])
   buyer     User           @relation(fields: [buyerId], references: [id])
@@ -96,9 +97,10 @@ model Purchase {
 model Payment {
   id         String        @id @default(uuid())
   status     PaymentStatus @default(PENDING)
-  createdAt  DateTime      @default(now())
   proofUrl   String?
   purchaseId String        @unique
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
   purchase   Purchase      @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
 }
 
